@@ -211,6 +211,28 @@
       .stats {
         grid-template-columns: 1fr;
       }
+
+      th,
+      td {
+        padding: 6px 8px;
+        font-size: 0.78em;
+      }
+
+      .delete-btn {
+        padding: 4px 7px;
+        font-size: 0.78em;
+      }
+    }
+
+    .footer-credits {
+      text-align: center;
+      margin: 32px 0 16px;
+      color: #999;
+      font-size: 0.85em;
+    }
+
+    .footer-credits strong {
+      color: #2c7be5;
     }
 
     .whatsapp-config {
@@ -267,7 +289,7 @@
 
     <!-- Configuração WhatsApp -->
     <div class="whatsapp-config">
-      <h3>📱 Número da sua médica (WhatsApp)</h3>
+      <h3>📱 Enviar via WhatsApp</h3>
       <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
         <input type="tel" id="numMedica" placeholder="Ex: 5511999998888 (com código do país)"
           style="flex:1; min-width:200px;">
@@ -361,6 +383,9 @@
         </thead>
         <tbody id="tbody"></tbody>
       </table>
+    </div>
+    <div class="footer-credits">
+      Desenvolvido por <strong>Ecio</strong> &mdash; Diário de Glicose v1.0
     </div>
   </div>
 
