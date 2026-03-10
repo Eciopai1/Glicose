@@ -413,6 +413,9 @@
     <!-- Histórico -->
     <h2>Histórico <span id="totalRegistros">(0 registros)</span></h2>
     <div class="actions">
+      <input type="file" id="importCsv" accept=".csv" style="display:none" onchange="importarCSV(event)">
+      <button class="btn-primary" onclick="document.getElementById('importCsv').click()"
+        style="background:#198754;">Importar CSV</button>
       <button class="btn-primary" onclick="exportCSV()">Exportar CSV</button>
       <button class="btn-secondary" onclick="window.print()">Exportar PDF (imprimir)</button>
       <button class="btn-danger" onclick="limparTudo()">Limpar Tudo</button>
@@ -634,6 +637,64 @@
       link.href = url;
       link.download = 'diario_glicose.csv';
       link.click();
+    }
+
+    function importarCSV(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const text = e.target.result;
+        const linhas = text.split('\n');
+        let importados = 0;
+
+        // Pula o cabeçalho (linha 0)
+        for (let i = 1; i < linhas.length; i++) {
+          let linha = linhas[i].trim();
+          if (!linha) continue;
+
+          // Processa o CSV lidando com aspas duplas (RegEx divide por vírgulas fora de aspas)
+          // Formato esperado: "Data","Hora",Glicose,"Status","Período","Observação"
+          const partes = linha.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+          if (!partes || partes.length < 5) continue;
+
+          const dataBr = partes[0].replace(/"/g, ''); // Ex: 10/03/2026
+          const horaStr = partes[1].replace(/"/g, ''); // Ex: 10:15
+          const glicose = parseInt(partes[2]); // Ex: 95
+          const periodo = partes[4].replace(/"/g, ''); // Ex: Jejum
+          const observacao = partes[5] ? partes[5].replace(/^"|"$/g, '').replace(/""/g, '"') : '';
+
+          // Converte data DD/MM/YYYY para YYYY-MM-DD
+          const [dia, mes, ano] = dataBr.split('/');
+          if (!dia || !mes || !ano) continue;
+          const dataHoraUnificada = `${ano}-${mes}-${dia}T${horaStr}`;
+
+          // Verifica se já existe para não duplicar
+          const jaExiste = registros.some(r => r.dataHora === dataHoraUnificada && r.valor === glicose);
+
+          if (!jaExiste) {
+            registros.push({
+              dataHora: dataHoraUnificada,
+              valor: glicose,
+              periodo: periodo,
+              observacao: observacao
+            });
+            importados++;
+          }
+        }
+
+        if (importados > 0) {
+          salvar();
+          mostrarToast(`✅ ${importados} registros importados com sucesso!`);
+        } else {
+          mostrarToast('ℹ️ Nenhum registro novo para importar.');
+        }
+
+        // Limpa o input para permitir importar o mesmo arquivo novamente se necessário
+        event.target.value = '';
+      };
+      reader.readAsText(file);
     }
 
     document.getElementById('dataHora').value = getLocalDateTime();
