@@ -212,15 +212,65 @@
         grid-template-columns: 1fr;
       }
 
-      th,
-      td {
-        padding: 6px 8px;
-        font-size: 0.78em;
+      .actions {
+        flex-direction: column;
       }
 
-      .delete-btn {
-        padding: 4px 7px;
-        font-size: 0.78em;
+      .actions button {
+        width: 100%;
+      }
+
+      /* Transforma tabela em cards no mobile */
+      table,
+      thead,
+      tbody,
+      th,
+      td,
+      tr {
+        display: block;
+      }
+
+      thead tr {
+        display: none;
+      }
+
+      tr {
+        background: white !important;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        padding: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      td {
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding: 8px 8px 8px 45% !important;
+        text-align: right !important;
+        min-height: 40px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+      }
+
+      td:last-child {
+        border-bottom: 0;
+      }
+
+      td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 12px;
+        width: 40%;
+        text-align: left;
+        font-weight: bold;
+        color: #555;
+      }
+
+      th,
+      td {
+        font-size: 1em;
       }
     }
 
@@ -385,7 +435,7 @@
       </table>
     </div>
     <div class="footer-credits">
-      Desenvolvido por <strong>Ecio</strong> &mdash; Diário de Glicose v1.0
+      Desenvolvido por <strong>Ecio de Oliveira Santos</strong> &mdash; Diário de Glicose v1.0
     </div>
   </div>
 
@@ -478,13 +528,13 @@
         const status = getStatus(reg.valor);
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${data}</td>
-          <td>${hora}</td>
-          <td>${reg.valor} mg/dL</td>
-          <td class="${status.classe}">${status.texto}</td>
-          <td>${reg.periodo}</td>
-          <td>${reg.observacao || '—'}</td>
-          <td><button class="delete-btn" onclick="excluir(${index})">Excluir</button></td>
+          <td data-label="Data">${data}</td>
+          <td data-label="Hora">${hora}</td>
+          <td data-label="Glicose">${reg.valor} mg/dL</td>
+          <td data-label="Status" class="${status.classe}">${status.texto}</td>
+          <td data-label="Período">${reg.periodo}</td>
+          <td data-label="Observação">${reg.observacao || '—'}</td>
+          <td data-label="Ação"><button class="delete-btn" onclick="excluir(${index})">Excluir</button></td>
         `;
         tbody.appendChild(tr);
       });
