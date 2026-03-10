@@ -1,0 +1,17 @@
+{
+    "name": "Diário de Glicose",
+    "short_name": "Glicose",
+    "description": "Monitore seus níveis de glicose de forma simples e eficiente",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#f8f9fa",
+    "theme_color": "#2c7be5",
+    "icons": [
+        {
+            "src": "icon.svg",
+            "sizes": "192x192 512x512",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}
