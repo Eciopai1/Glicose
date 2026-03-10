@@ -443,7 +443,34 @@
   </div>
 
   <script>
+    const historicoDaImagem = [
+      { dataHora: '2026-03-10T10:52', valor: 118, periodo: 'Pré-refeição', observacao: '' },
+      { dataHora: '2026-03-10T06:00', valor: 185, periodo: 'Jejum', observacao: '' },
+      { dataHora: '2026-03-09T20:28', valor: 344, periodo: 'Antes de dormir', observacao: '' },
+      { dataHora: '2026-03-09T11:21', valor: 198, periodo: 'Pré-refeição', observacao: '' },
+      { dataHora: '2026-03-09T03:52', valor: 107, periodo: 'Jejum', observacao: '' },
+      { dataHora: '2026-03-08T19:51', valor: 190, periodo: 'Antes de dormir', observacao: '' },
+      { dataHora: '2026-03-08T14:39', valor: 281, periodo: 'Pós-refeição', observacao: 'Duas horas após a refeição.' },
+      { dataHora: '2026-03-08T07:18', valor: 201, periodo: 'Jejum', observacao: '' },
+      { dataHora: '2026-03-07T18:41', valor: 152, periodo: 'Antes de dormir', observacao: '' },
+      { dataHora: '2026-03-07T11:11', valor: 355, periodo: 'Pré-refeição', observacao: '' },
+      { dataHora: '2026-03-07T07:39', valor: 93, periodo: 'Jejum', observacao: '' },
+      { dataHora: '2026-03-06T20:30', valor: 194, periodo: 'Antes de dormir', observacao: '' },
+      { dataHora: '2026-03-06T11:30', valor: 439, periodo: 'Pré-refeição', observacao: '' },
+      { dataHora: '2026-03-06T06:15', valor: 214, periodo: 'Jejum', observacao: '' },
+      { dataHora: '2026-03-06T00:14', valor: 498, periodo: 'Jejum', observacao: '' },
+      { dataHora: '2026-03-05T08:00', valor: 318, periodo: 'Jejum', observacao: '' }
+    ];
+
     let registros = JSON.parse(localStorage.getItem('glicoseRegistros')) || [];
+
+    // Importa automaticamente os dados da imagem (executa uma só vez)
+    const jaImportouImagem = registros.some(r => r.dataHora === '2026-03-05T08:00' && r.valor === 318);
+    if (!jaImportouImagem) {
+      registros = [...registros, ...historicoDaImagem];
+      localStorage.setItem('glicoseRegistros', JSON.stringify(registros));
+    }
+
     const chartCtx = document.getElementById('glicoseChart').getContext('2d');
     let chart;
     let ultimaMedicao = null;
@@ -653,6 +680,12 @@
         for (let i = 1; i < linhas.length; i++) {
           let linha = linhas[i].trim();
           if (!linha) continue;
+
+          // Suporte para CSV brasileiro (onde o separador é ; ao invés de ,)
+          if (linha.includes(';') && !linha.includes(',')) {
+            // Troca os ponto-e-vírgulas por vírgulas só pra não quebrar a nossa leitura abaixo
+            linha = linha.split(';').join(',');
+          }
 
           // Processa o CSV lidando com aspas duplas (RegEx divide por vírgulas fora de aspas)
           // Formato esperado: "Data","Hora",Glicose,"Status","Período","Observação"
