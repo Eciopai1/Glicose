@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diário de Glicose</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 12px;
+      background: #f8f9fa;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c7be5;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      color: #444;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 24px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .stat-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.1em;
+      color: #555;
+    }
+
+    .stat-value {
+      font-size: 1.8em;
+      font-weight: bold;
+    }
+
+    #chartContainer {
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin: 24px 0;
+      height: 320px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    th,
+    td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: #2c7be5;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+
+    .status-normal {
+      color: green;
+      font-weight: bold;
+    }
+
+    .status-alto {
+      color: orange;
+      font-weight: bold;
+    }
+
+    .status-muito-alto {
+      color: red;
+      font-weight: bold;
+    }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-primary {
+      background: #2c7be5;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1e5bb8;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 32px;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 4px;
+      font-weight: bold;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    .actions {
+      margin: 16px 0;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .whatsapp-config {
+      background: #e8f5e9;
+      border: 1px solid #a5d6a7;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+
+    .whatsapp-config h3 {
+      margin: 0 0 10px;
+      color: #2e7d32;
+      font-size: 1em;
+    }
+
+    .whatsapp-config input {
+      border: 1px solid #a5d6a7;
+    }
+
+    .btn-whatsapp {
+      background: #25D366;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-whatsapp:hover {
+      background: #1da851;
+    }
+
+    #toastWhatsapp {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.95em;
+      z-index: 999;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="toastWhatsapp"></div>
+  <div class="container">
+    <h1>Diário de Glicose</h1>
+    <p class="subtitle">Monitore seus níveis de glicose de forma simples e eficiente</p>
+
+    <!-- Configuração WhatsApp -->
+    <div class="whatsapp-config">
+      <h3>📱 Número da sua médica (WhatsApp)</h3>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <input type="tel" id="numMedica" placeholder="Ex: 5511999998888 (com código do país)"
+          style="flex:1; min-width:200px;">
+        <button class="btn-primary" onclick="salvarNumero()" style="white-space:nowrap;">Salvar número</button>
+      </div>
+      <small style="color:#555; display:block; margin-top:6px;">Formato: 55 + DDD + número (sem espaços ou traços). Ex:
+        <strong>5511999998888</strong></small>
+    </div>
+
+    <!-- Formulário Nova Medição -->
+    <form id="formMedicao">
+      <h2>Nova Medição</h2>
+      <label>Data e Hora</label>
+      <input type="datetime-local" id="dataHora" required>
+
+      <label>Valor da Glicose (mg/dL)</label>
+      <input type="number" id="valor" min="20" max="600" required placeholder="Ex: 120">
+
+      <label>Período</label>
+      <select id="periodo" required>
+        <option value="">Selecione</option>
+        <option value="Jejum">Jejum</option>
+        <option value="Pré-refeição">Pré-refeição</option>
+        <option value="Pós-refeição">Pós-refeição</option>
+        <option value="Antes de dormir">Antes de dormir</option>
+        <option value="Outros">Outros</option>
+      </select>
+
+      <label>Observação (opcional)</label>
+      <textarea id="observacao" rows="3" placeholder="Ex: Após almoço com arroz..."></textarea>
+
+      <button type="submit" class="btn-primary"
+        style="margin-top: 20px; width: 100%; padding: 14px; font-size: 1.1em;">Adicionar Medição</button>
+    </form>
+    <div id="enviarContainer" style="display:none; margin-bottom:24px;">
+      <button class="btn-whatsapp" id="btnEnviar" onclick="enviarWhatsApp()"
+        style="width:100%; padding:14px; font-size:1.1em; border-radius:6px; border:none; cursor:pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 24 24">
+          <path
+            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+        </svg>
+        Enviar medição para a médica
+      </button>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="stats">
+      <div class="stat-card">
+        <h3>Média</h3>
+        <div id="media" class="stat-value">—</div>
+      </div>
+      <div class="stat-card">
+        <h3>Máxima</h3>
+        <div id="maxima" class="stat-value">—</div>
+      </div>
+      <div class="stat-card">
+        <h3>Mínima</h3>
+        <div id="minima" class="stat-value">—</div>
+      </div>
+      <div class="stat-card">
+        <h3>Na Faixa (70-140)</h3>
+        <div id="naFaixa" class="stat-value">—%</div>
+      </div>
+    </div>
+
+    <!-- Gráfico -->
+    <div id="chartContainer">
+      <canvas id="glicoseChart"></canvas>
+    </div>
+
+    <!-- Histórico -->
+    <h2>Histórico <span id="totalRegistros">(0 registros)</span></h2>
+    <div class="actions">
+      <button class="btn-primary" onclick="exportCSV()">Exportar CSV</button>
+      <button class="btn-secondary" onclick="window.print()">Exportar PDF (imprimir)</button>
+      <button class="btn-danger" onclick="limparTudo()">Limpar Tudo</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table id="tabela">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Hora</th>
+            <th>Glicose</th>
+            <th>Status</th>
+            <th>Período</th>
+            <th>Observação</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let registros = JSON.parse(localStorage.getItem('glicoseRegistros')) || [];
+    const chartCtx = document.getElementById('glicoseChart').getContext('2d');
+    let chart;
+    let ultimaMedicao = null;
+
+    // Retorna data/hora local no formato datetime-local (sem o bug de UTC)
+    function getLocalDateTime() {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      return now.toISOString().slice(0, 16);
+    }
+
+    // Carrega número da médica salvo
+    const numSalvo = localStorage.getItem('numMedica');
+    if (numSalvo) document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('numMedica').value = numSalvo;
+    });
+    window.addEventListener('load', () => {
+      const n = localStorage.getItem('numMedica');
+      if (n) document.getElementById('numMedica').value = n;
+    });
+
+    function salvarNumero() {
+      const num = document.getElementById('numMedica').value.replace(/\D/g, '');
+      if (!num) return alert('Digite o número da médica.');
+      localStorage.setItem('numMedica', num);
+      mostrarToast('✅ Número salvo com sucesso!');
+    }
+
+    function mostrarToast(msg) {
+      const t = document.getElementById('toastWhatsapp');
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    function enviarWhatsApp() {
+      const num = localStorage.getItem('numMedica');
+      if (!num) return alert('Salve o número da médica primeiro.');
+      if (!ultimaMedicao) return;
+      const { data, hora } = formatDateTime(ultimaMedicao.dataHora);
+      const status = getStatus(ultimaMedicao.valor).texto;
+      const msg = `📊 *Diário de Glicose*%0A%0A🗓️ *Data:* ${data} ${hora}%0A🍬 *Glicose:* ${ultimaMedicao.valor} mg/dL%0A📌 *Status:* ${status}%0A⏰ *Período:* ${ultimaMedicao.periodo}${ultimaMedicao.observacao ? '%0A📝 *Obs:* ' + encodeURIComponent(ultimaMedicao.observacao) : ''}%0A%0A_Enviado pelo Diário de Glicose_`;
+      window.open(`https://wa.me/${num}?text=${msg}`, '_blank');
+    }
+
+    function formatDateTime(dt) {
+      const d = new Date(dt);
+      return {
+        data: d.toLocaleDateString('pt-BR'),
+        hora: d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      };
+    }
+
+    function getStatus(valor) {
+      if (valor >= 70 && valor <= 140) return { texto: 'Normal', classe: 'status-normal' };
+      if (valor <= 180) return { texto: 'Alto', classe: 'status-alto' };
+      return { texto: 'Muito Alto', classe: 'status-muito-alto' };
+    }
+
+    function atualizarTudo() {
+      // Estatísticas
+      if (registros.length === 0) {
+        document.getElementById('media').textContent = '—';
+        document.getElementById('maxima').textContent = '—';
+        document.getElementById('minima').textContent = '—';
+        document.getElementById('naFaixa').textContent = '—%';
+      } else {
+        const valores = registros.map(r => r.valor);
+        const media = (valores.reduce((a, b) => a + b, 0) / valores.length).toFixed(1);
+        const max = Math.max(...valores);
+        const min = Math.min(...valores);
+        const naFaixa = valores.filter(v => v >= 70 && v <= 140).length / valores.length * 100;
+        document.getElementById('media').textContent = media + ' mg/dL';
+        document.getElementById('maxima').textContent = max + ' mg/dL';
+        document.getElementById('minima').textContent = min + ' mg/dL';
+        document.getElementById('naFaixa').textContent = naFaixa.toFixed(1) + '%';
+      }
+
+      // Tabela
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML = '';
+      registros.sort((a, b) => new Date(b.dataHora) - new Date(a.dataHora)); // Mais recente primeiro
+      registros.forEach((reg, index) => {
+        const { data, hora } = formatDateTime(reg.dataHora);
+        const status = getStatus(reg.valor);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${data}</td>
+          <td>${hora}</td>
+          <td>${reg.valor} mg/dL</td>
+          <td class="${status.classe}">${status.texto}</td>
+          <td>${reg.periodo}</td>
+          <td>${reg.observacao || '—'}</td>
+          <td><button class="delete-btn" onclick="excluir(${index})">Excluir</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('totalRegistros').textContent = `(${registros.length} registros)`;
+
+      // Gráfico
+      const labels = registros.map(r => {
+        const d = new Date(r.dataHora);
+        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      }).reverse(); // Para ordem cronológica no gráfico
+      const data = registros.map(r => r.valor).reverse();
+
+      if (chart) chart.destroy();
+      chart = new Chart(chartCtx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Glicose (mg/dL)',
+            data: data,
+            borderColor: '#2c7be5',
+            backgroundColor: 'rgba(44,123,229,0.2)',
+            tension: 0.3,
+            pointRadius: 5,
+            pointBackgroundColor: '#2c7be5'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: false, suggestedMin: 50, suggestedMax: 300 },
+            x: { ticks: { maxRotation: 45, minRotation: 45 } }
+          },
+          plugins: {
+            annotation: {
+              annotations: {
+                line1: { type: 'line', yMin: 70, yMax: 70, borderColor: 'green', borderWidth: 2, label: { content: '70 mg/dL (mín)', enabled: true, position: 'start' } },
+                line2: { type: 'line', yMin: 140, yMax: 140, borderColor: 'orange', borderWidth: 2, label: { content: '140 mg/dL (máx)', enabled: true, position: 'start' } }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function salvar() {
+      localStorage.setItem('glicoseRegistros', JSON.stringify(registros));
+      atualizarTudo();
+    }
+
+    document.getElementById('formMedicao').addEventListener('submit', e => {
+      e.preventDefault();
+      const dataHora = document.getElementById('dataHora').value || getLocalDateTime();
+      const valor = parseInt(document.getElementById('valor').value);
+      const periodo = document.getElementById('periodo').value;
+      const observacao = document.getElementById('observacao').value.trim();
+
+      if (!valor || !periodo) return alert('Preencha valor e período!');
+
+      ultimaMedicao = { dataHora, valor, periodo, observacao };
+      registros.push(ultimaMedicao);
+      salvar();
+      e.target.reset();
+      document.getElementById('dataHora').value = getLocalDateTime();
+
+      // Mostra botão de envio para médica
+      document.getElementById('enviarContainer').style.display = 'block';
+      mostrarToast('✅ Medição salva! Deseja enviar para a médica?');
+    });
+
+    function excluir(index) {
+      if (confirm('Excluir esta medição?')) {
+        registros.splice(index, 1);
+        salvar();
+      }
+    }
+
+    function limparTudo() {
+      if (confirm('Apagar TODOS os registros?')) {
+        registros = [];
+        salvar();
+      }
+    }
+
+    function exportCSV() {
+      if (registros.length === 0) return alert('Nenhum registro para exportar.');
+      let csv = 'Data,Hora,Glicose,Status,Período,Observação\n';
+      registros.forEach(r => {
+        const { data, hora } = formatDateTime(r.dataHora);
+        const status = getStatus(r.valor).texto;
+        csv += `"${data}","${hora}",${r.valor},"${status}","${r.periodo}","${r.observacao.replace(/"/g, '""')}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'diario_glicose.csv';
+      link.click();
+    }
+
+    document.getElementById('dataHora').value = getLocalDateTime();
+    atualizarTudo();
+  </script>
+</body>
+
+</html>
